@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สิขรี เวลเนส แอนด์ สปา — แบบประเมินสมดุลองค์รวม (ธรรมนามัย ๓)</title>
+<title>คลินิกการแพทย์แผนไทย รพ.สต.บ้านยางอ้อย — แบบประเมินสมดุลองค์รวม (ธรรมนามัย ๓)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@ button,input,select,textarea{font-family:inherit}
 .wz{width:100%; max-width:760px; display:flex; flex-direction:column; min-height:100vh}
 
 .wz-top{padding:34px 0 0; text-align:center}
-.wz-org{font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.wz-org{font-size:14px; letter-spacing:.02em; color:var(--muted); font-weight:600}
 .progress{display:flex; gap:6px; margin:22px 0 0}
 .progress i{flex:1; height:5px; border-radius:99px; background:var(--track); transition:.25s}
 .progress i.done{background:var(--olive-head)}
@@ -261,7 +261,7 @@ table.routine td.tm em{display:block; font-style:normal; font-weight:500; color:
 <div id="wizard">
   <div class="wz">
     <div class="wz-top">
-      <div class="wz-org" id="wzOrg">SIKHAREE WELLNESS &amp; SPA</div>
+      <div class="wz-org" id="wzOrg">คลินิกการแพทย์แผนไทย รพ.สต.บ้านยางอ้อย</div>
       <div class="progress" id="wzProgress"></div>
       <div class="wz-count" id="wzCount"></div>
     </div>
@@ -376,16 +376,16 @@ table.routine td.tm em{display:block; font-style:normal; font-weight:500; color:
    ================================================================== */
 const DEFAULT_CFG = {
   org:{
-    brand:'SIKHAREE WELLNESS & SPA',
+    brand:'คลินิกการแพทย์แผนไทย รพ.สต.บ้านยางอ้อย',
     title:'รายงานการวิเคราะห์สมดุลองค์รวม',
-    subtitle:'สิขรี เวลเนส แอนด์ สปา (Sikharee Wellness & Spa, Chiang Mai)',
-    footer:'สิขรี เวลเนส แอนด์ สปา · เชียงใหม่',
-    idPrefix:'SK',
+    subtitle:'คลินิกการแพทย์แผนไทย รพ.สต.บ้านยางอ้อย',
+    footer:'คลินิกการแพทย์แผนไทย รพ.สต.บ้านยางอ้อย',
+    idPrefix:'YA',
     scoreTitle:'คะแนนสมดุลองค์รวม',
     scoreNote:'*คะแนนรวมสะท้อนถึงมูลค่าความสมดุลของร่างกายและจิตใจ ผู้ที่อยู่ในภาวะสมดุลจะได้คะแนนเข้าใกล้ 100 คะแนน',
     domTitle:'การวิเคราะห์ธรรมนามัย ๓ ประการ',
     elTitle:'การประเมินสภาวะธาตุ ๔',
-    svcTitle:'บริการที่แนะนำ (สิขรี เวลเนส)',
+    svcTitle:'บริการที่แนะนำ',
     disclaimer:'*รายงานนี้ประมวลผลตามหลักเวชกรรมแผนไทยประยุกต์ เพื่อเป็นแนวทางในการดูแลสุขภาพเบื้องต้น ไม่ใช่การวินิจฉัยทางการแพทย์แผนปัจจุบัน',
     intakeTitle:'ข้อมูลผู้รับบริการ',
     intakeSub:'กรอกข้อมูลเบื้องต้นก่อนเริ่มแบบประเมิน ข้อมูลนี้จะแสดงบนหัวรายงาน'
@@ -500,10 +500,24 @@ let step = 0;                    // 0 = ข้อมูล, 1..n = หมวด
 const intake = {name:'',id:'',month:'',dhatu:DHATU[0]};
 const $ = id => document.getElementById(id);
 
+/* ชื่อหน่วยงานชุดเดิม — ถ้าเครื่องไหนเคยบันทึกไว้และยังไม่เคยแก้เอง ให้อัปเดตตามค่าใหม่ */
+const LEGACY_ORG = {
+  brand:'SIKHAREE WELLNESS & SPA',
+  subtitle:'สิขรี เวลเนส แอนด์ สปา (Sikharee Wellness & Spa, Chiang Mai)',
+  footer:'สิขรี เวลเนส แอนด์ สปา · เชียงใหม่',
+  svcTitle:'บริการที่แนะนำ (สิขรี เวลเนส)',
+  idPrefix:'SK'
+};
 function loadCfg(){
   try{
     const raw = localStorage.getItem(CFG_KEY);
-    if(raw) return Object.assign(structuredClone(DEFAULT_CFG), JSON.parse(raw));
+    if(raw){
+      const cfg = Object.assign(structuredClone(DEFAULT_CFG), JSON.parse(raw));
+      if(cfg.org) for(const k in LEGACY_ORG){
+        if(cfg.org[k] === LEGACY_ORG[k]) cfg.org[k] = DEFAULT_CFG.org[k];
+      }
+      return cfg;
+    }
   }catch(e){}
   return structuredClone(DEFAULT_CFG);
 }
@@ -1205,7 +1219,7 @@ $('edClose').onclick = ()=>{
 };
 $('edExport').onclick = ()=>{
   const blob=new Blob([JSON.stringify(CFG,null,2)],{type:'application/json'});
-  const a=el('a',{href:URL.createObjectURL(blob),download:'sikharee-config.json'});
+  const a=el('a',{href:URL.createObjectURL(blob),download:'ttm-survey-config.json'});
   document.body.appendChild(a); a.click(); a.remove();
 };
 $('edImport').onclick = ()=>$('edFile').click();
