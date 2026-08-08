@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สิขรี เวลเนส แอนด์ สปา — แบบประเมินสมดุลองค์รวม (ธรรมนามัย ๓)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --olive:#7f8455; --olive-dark:#5f6540; --olive-head:#8d8e6e; --olive-head-2:#a5a48b;
+  --cream:#faf8f2; --cream-2:#f2efe6;
+  --surface:#fff; --surface-2:#fdfdfa; --hover:#fbfaf5; --hint-bg:#fdfcf6;
+  --ink:#33332e; --ink-2:#5b5b52; --muted:#8a8a80;
+  --line:#d9d7cc; --track:#e3e1da; --rule:#3f3f38; --info-line:#dedbd0;
+  --red:#b8392c; --amber:#e2a13b; --green:#6f7d4c; --amber-txt:#c8891f;
+  --danger-bg:#fbf1f0; --danger-line:#e3c3bf;
+  --on-olive:#fff; --disabled:#c6c5b8; --on-disabled:#fff;
+  --shadow:rgba(0,0,0,.14);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --olive:#98a067; --olive-dark:#aeb87c; --olive-head:#5f6448; --olive-head-2:#6b7052;
+  --cream:#23241d; --cream-2:#191a14;
+  --surface:#2b2d24; --surface-2:#2f3128; --hover:#343629; --hint-bg:#262820;
+  --ink:#eae8dd; --ink-2:#bab8aa; --muted:#8d8b7e;
+  --line:#3d3f34; --track:#383a2f; --rule:#6d6f5f; --info-line:#3d3f34;
+  --red:#e8796b; --amber:#e9b45f; --green:#a6bd73; --amber-txt:#e9b45f;
+  --danger-bg:#3a2724; --danger-line:#5c3b36;
+  --on-olive:#1b1c15; --disabled:#3a3c31; --on-disabled:#7c7b70;
+  --shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:'Sarabun','IBM Plex Sans Thai','Noto Sans Thai','Sukhumvit Set',
+              -apple-system,'Helvetica Neue',Tahoma,sans-serif;
+  background:var(--cream-2); color:var(--ink); font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit}
+
+/* ================= WIZARD (เต็มหน้า) ================= */
+#wizard{min-height:100vh; display:flex; flex-direction:column; align-items:center;
+        padding:0 20px 40px}
+.wz{width:100%; max-width:760px; display:flex; flex-direction:column; min-height:100vh}
+
+.wz-top{padding:34px 0 0; text-align:center}
+.wz-org{font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600}
+.progress{display:flex; gap:6px; margin:22px 0 0}
+.progress i{flex:1; height:5px; border-radius:99px; background:var(--track); transition:.25s}
+.progress i.done{background:var(--olive-head)}
+.progress i.now{background:var(--olive)}
+.wz-count{margin-top:9px; font-size:13.5px; color:var(--muted); text-align:left}
+
+.wz-body{flex:1; display:flex; flex-direction:column; justify-content:flex-start; padding:40px 0 30px}
+.wz-title{font-size:34px; font-weight:800; line-height:1.25; margin:0 0 6px; letter-spacing:-.4px}
+.wz-sub{margin:0 0 30px; color:var(--muted); font-size:16px}
+
+/* ---- ข้อมูลผู้รับบริการ ---- */
+.grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 20px}
+.field label{display:block; font-size:14px; font-weight:600; margin-bottom:6px; color:var(--ink-2)}
+.field input,.field select{
+  width:100%; padding:13px 14px; font-size:16px; border:1px solid var(--line);
+  border-radius:10px; background:var(--surface); color:var(--ink);
+}
+.field input:focus,.field select:focus{outline:2px solid #cfd3b6; outline-offset:1px; border-color:var(--olive)}
+.field .sub{font-size:12.5px; color:var(--muted); margin-top:5px}
+
+.scalecard{
+  margin-top:26px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px;
+}
+.scalecard h4{margin:0 0 8px; font-size:14.5px; font-weight:700}
+.scalecard ul{margin:0; padding-left:20px; font-size:14px; color:var(--ink-2)}
+.scalecard li{margin:3px 0}
+.scalecard li b{color:var(--ink)}
+
+/* ---- คำถาม ---- */
+.q{padding:20px 0; border-top:1px solid var(--line)}
+.q:first-child{border-top:0; padding-top:4px}
+.qt{font-size:18px; font-weight:600; margin-bottom:14px; line-height:1.45}
+.qt i{font-style:normal; color:var(--olive); font-weight:800; margin-right:9px}
+.opts{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px}
+.opt{position:relative}
+.opt input{position:absolute; opacity:0; inset:0; cursor:pointer}
+.opt span{
+  display:block; text-align:center; padding:12px 8px; border:1px solid var(--line);
+  border-radius:10px; font-size:12.5px; line-height:1.35; cursor:pointer;
+  background:var(--surface); color:var(--ink-2); transition:.12s;
+}
+.opt span b{display:block; font-size:14.5px; color:var(--ink); margin-bottom:1px}
+.opt input:hover + span{border-color:var(--olive-head); background:var(--hover)}
+.opt input:checked + span{background:var(--olive); border-color:var(--olive); color:var(--on-olive)}
+.opt input:checked + span b{color:var(--on-olive)}
+.opt input:focus-visible + span{outline:2px solid #cfd3b6; outline-offset:2px}
+
+/* ---- nav ---- */
+.wz-nav{display:flex; align-items:center; gap:14px; padding:20px 0 0; border-top:1px solid var(--line)}
+.wz-nav .left{font-size:13.5px; color:var(--muted)}
+.wz-nav .sp{margin-left:auto}
+.btn{
+  padding:13px 26px; border-radius:10px; border:1px solid var(--olive);
+  background:var(--olive); color:var(--on-olive); font-size:16px; font-weight:700; cursor:pointer;
+}
+.btn:hover{background:var(--olive-dark); border-color:var(--olive-dark)}
+.btn:disabled{background:var(--disabled); border-color:var(--disabled); color:var(--on-disabled); cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--ink-2); border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface); color:var(--ink)}
+.btn.sm{padding:8px 15px; font-size:14px; border-radius:8px}
+.btn.danger{background:var(--surface); color:var(--red); border-color:var(--danger-line)}
+.btn.danger:hover{background:var(--danger-bg)}
+
+/* gear */
+#fabs{position:fixed; right:18px; bottom:18px; z-index:120;
+       display:flex; flex-direction:column-reverse; gap:10px}
+#fabs button{
+  width:46px; height:46px; border-radius:50%; border:1px solid var(--line);
+  background:var(--surface); color:var(--ink-2); font-size:19px; cursor:pointer;
+  box-shadow:0 3px 12px var(--shadow); line-height:1;
+}
+#fabs button:hover{background:var(--hover); color:var(--ink)}
+
+/* ================= REPORT ================= */
+#reportView{display:none}
+.sheetbar{max-width:800px; margin:0 auto; padding:24px 20px 6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.sheetbar .note{font-size:13px; color:var(--muted); margin-left:auto; text-align:right}
+.sheetwrap{padding:14px 20px 60px; display:flex; justify-content:center}
+
+.page{
+  width:210mm; min-height:297mm; background:var(--cream);
+  padding:12mm 12mm 10mm; color:var(--ink);
+  box-shadow:0 6px 30px var(--shadow);
+  font-size:10.2pt; line-height:1.42;
+}
+.rp-head{text-align:center; padding-bottom:6px; border-bottom:2px solid var(--rule)}
+.rp-head h1{margin:0; font-size:23pt; font-weight:800; letter-spacing:-.3px; line-height:1.25}
+.rp-head p{margin:1px 0 0; font-size:10.5pt; color:var(--ink-2)}
+.rp-info{margin-top:9px; background:var(--cream-2); border-radius:3px; display:flex; font-size:9.6pt; padding:6px}
+.rp-info div{flex:1; text-align:center; padding:0 6px; border-right:1px solid var(--info-line)}
+.rp-info div:last-child{border-right:0}
+.rp-summary{
+  margin-top:8px; background:var(--surface); border-left:4px solid var(--olive);
+  padding:7px 12px; font-size:8.9pt; line-height:1.4; color:var(--ink-2); border-radius:0 4px 4px 0;
+}
+.rp-summary b{color:var(--ink)}
+.cols{display:flex; gap:13px; margin-top:11px; align-items:flex-start}
+.col-l{flex:1.32; min-width:0}
+.col-r{flex:1; min-width:0}
+h2.sec{margin:0 0 7px; font-size:12.5pt; font-weight:800; border-left:5px solid var(--olive); padding-left:10px; line-height:1.25}
+.col-l h2.sec:not(:first-child), .col-r h2.sec{margin-top:13px}
+table.rt{width:100%; border-collapse:collapse; font-size:9.1pt}
+table.rt th{background:var(--olive-head-2); color:#fff; font-weight:600; padding:5px 8px; text-align:center; border:1px solid var(--olive-head-2)}
+table.rt td{border:1px solid var(--line); padding:4.5px 8px; background:var(--surface)}
+table.rt td.c{text-align:center}
+table.rt.dark th{background:var(--olive-head); border-color:var(--olive-head)}
+.el{margin:7px 0 0}
+.el-top{display:flex; justify-content:space-between; align-items:baseline; font-size:9.4pt}
+.el-top .nm{font-weight:600}
+.el-top .st{font-weight:800}
+.bar{height:8px; background:var(--track); border-radius:5px; margin-top:3px; overflow:hidden}
+.bar > i{display:block; height:100%; border-radius:5px}
+.c-green{color:var(--green)} .bg-green{background:var(--green)}
+.c-amber{color:var(--amber-txt)} .bg-amber{background:var(--amber)}
+.c-red{color:var(--red)}   .bg-red{background:var(--red)}
+table.routine{width:100%; border-collapse:collapse; font-size:7.7pt; line-height:1.3}
+table.routine th{background:var(--cream-2); color:var(--ink); font-weight:700; padding:4px 7px; text-align:left; border:1px solid var(--line); font-size:8.4pt}
+table.routine th:first-child{white-space:nowrap}
+table.routine td{border:1px solid var(--line); padding:3.5px 7px; vertical-align:top; background:var(--surface)}
+table.routine td.tm{width:25%; font-weight:700; white-space:pre-line}
+table.routine td.tm em{display:block; font-style:normal; font-weight:500; color:var(--ink-2); font-size:7.6pt}
+.scorebox{border:1px solid var(--line); background:var(--surface); border-radius:5px; padding:10px 14px 11px; text-align:center}
+.scorebox h3{margin:0 0 1px; font-size:12.5pt; font-weight:800}
+.scorebox .big{font-size:34pt; font-weight:800; line-height:1.05; letter-spacing:-1px}
+.scorebox .big .unit{font-size:13pt; font-weight:600; color:var(--ink-2)}
+.scorebox .fn{margin:4px 0 0; font-size:7.5pt; color:var(--muted); line-height:1.38}
+.kv{display:flex; justify-content:space-between; gap:10px; align-items:baseline; padding:5.5px 2px; border-bottom:1px dashed var(--line); font-size:9.4pt}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--ink-2)}
+.kv .v{font-weight:800; text-align:right}
+.disclaimer{margin-top:10px; font-size:7.5pt; color:var(--muted); line-height:1.42}
+.rp-foot{margin-top:10px; padding-top:6px; border-top:1px solid var(--line); display:flex; justify-content:space-between; font-size:7.6pt; color:var(--muted)}
+
+/* ================= EDITOR ================= */
+#editor{display:none; position:fixed; inset:0; z-index:100; background:var(--cream-2); overflow:auto}
+.ed-bar{
+  position:sticky; top:0; z-index:5; background:var(--surface); border-bottom:1px solid var(--line);
+  padding:12px 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.ed-bar h2{margin:0; font-size:18px; font-weight:800}
+.ed-bar .sp{margin-left:auto}
+.ed-tabs{display:flex; gap:6px; padding:14px 20px 0; max-width:1080px; margin:0 auto; flex-wrap:wrap}
+.ed-tab{padding:8px 16px; border-radius:99px; border:1px solid var(--line); background:var(--surface);
+        font-size:14px; cursor:pointer; color:var(--ink-2)}
+.ed-tab.on{background:var(--olive); border-color:var(--olive); color:var(--on-olive); font-weight:600}
+.ed-body{max-width:1080px; margin:0 auto; padding:18px 20px 80px}
+.ed-pane{display:none}
+.ed-pane.on{display:block}
+.ed-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:14px}
+.ed-card > h3{margin:0 0 12px; font-size:16px; font-weight:800; display:flex; align-items:center; gap:10px}
+.ed-card > h3 .tag{font-size:12px; font-weight:600; padding:2px 10px; border-radius:99px; background:var(--cream-2); color:var(--ink-2)}
+.ed-row{display:grid; gap:10px; align-items:start; margin-bottom:10px}
+.ed-lab{font-size:13px; font-weight:600; color:var(--ink-2); margin-bottom:4px; display:block}
+.ed-body input[type=text],.ed-body input[type=number],.ed-body select,.ed-body textarea{
+  width:100%; padding:9px 11px; font-size:14.5px; border:1px solid var(--line);
+  border-radius:8px; background:var(--surface); color:var(--ink);
+}
+.ed-body textarea{resize:vertical; line-height:1.5}
+.ed-body input:focus,.ed-body select:focus,.ed-body textarea:focus{outline:2px solid #cfd3b6; outline-offset:1px; border-color:var(--olive)}
+.ed-item{border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:var(--surface-2)}
+.ed-item .top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.ed-item .top .n{font-weight:800; color:var(--olive-dark); font-size:14px}
+.ed-item .top .sp{margin-left:auto}
+.ico{width:30px; height:30px; border-radius:7px; border:1px solid var(--line); background:var(--surface);
+     cursor:pointer; font-size:14px; color:var(--ink-2); line-height:1}
+.ico:hover{background:var(--cream)}
+.ico.del:hover{background:var(--danger-bg); color:var(--red); border-color:var(--danger-line)}
+.hintbox{background:var(--hint-bg); border:1px dashed var(--line); border-radius:10px; padding:11px 14px;
+         font-size:13.5px; color:var(--ink-2); margin-bottom:14px}
+.saved{font-size:13.5px; color:var(--green); font-weight:600; opacity:0; transition:.3s}
+.saved.on{opacity:1}
+.cols3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.cols2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+
+/* ================= PRINT ================= */
+@page{size:A4 portrait; margin:0}
+@media print{
+  :root, :root[data-theme="dark"]{
+    color-scheme:light;
+    --olive:#7f8455; --olive-dark:#5f6540; --olive-head:#8d8e6e; --olive-head-2:#a5a48b;
+    --cream:#faf8f2; --cream-2:#f2efe6;
+    --surface:#fff; --surface-2:#fdfdfa; --hover:#fbfaf5; --hint-bg:#fdfcf6;
+    --ink:#33332e; --ink-2:#5b5b52; --muted:#8a8a80;
+    --line:#d9d7cc; --track:#e3e1da; --rule:#3f3f38; --info-line:#dedbd0;
+    --red:#b8392c; --amber:#e2a13b; --green:#6f7d4c; --amber-txt:#c8891f;
+  }
+  body{background:#fff}
+  #wizard,.sheetbar,#fabs,#editor{display:none !important}
+  .sheetwrap{padding:0; display:block}
+  .page{width:210mm; min-height:auto; box-shadow:none; margin:0}
+  table.routine tr,.el,.kv,.scorebox{break-inside:avoid}
+  h2.sec{break-after:avoid}
+}
+@media screen and (max-width:900px){
+  .grid,.cols2,.cols3{grid-template-columns:1fr}
+  .opts{grid-template-columns:repeat(2,1fr)}
+  .wz-title{font-size:27px}
+  .page{width:100%; padding:18px}
+  .cols{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= WIZARD ================= -->
+<div id="wizard">
+  <div class="wz">
+    <div class="wz-top">
+      <div class="wz-org" id="wzOrg">SIKHAREE WELLNESS &amp; SPA</div>
+      <div class="progress" id="wzProgress"></div>
+      <div class="wz-count" id="wzCount"></div>
+    </div>
+
+    <div class="wz-body">
+      <h1 class="wz-title" id="wzTitle"></h1>
+      <p class="wz-sub" id="wzSub"></p>
+      <div id="wzContent"></div>
+    </div>
+
+    <div class="wz-nav">
+      <div class="left" id="wzLeft"></div>
+      <div class="sp"></div>
+      <button class="btn ghost" id="btnPrev" type="button">← ย้อนกลับ</button>
+      <button class="btn" id="btnNext" type="button">ถัดไป →</button>
+    </div>
+  </div>
+</div>
+
+<div id="fabs">
+  <button id="gear" type="button" title="แก้ไขแบบสอบถามและผลลัพธ์">⚙</button>
+  <button id="theme" type="button" title="สลับเป็นโหมดมืด">☾</button>
+</div>
+
+<!-- ================= REPORT ================= -->
+<div id="reportView">
+  <div class="sheetbar">
+    <button class="btn" id="btnPrint" type="button">บันทึกเป็น PDF / พิมพ์</button>
+    <button class="btn ghost" id="btnNew" type="button">เริ่มแบบประเมินใหม่</button>
+    <div class="note">ในหน้าต่างพิมพ์ เลือกปลายทาง <b>“บันทึกเป็น PDF”</b><br>ขนาด A4 · ปิด Headers and footers</div>
+  </div>
+  <div class="sheetwrap">
+    <div class="page" id="sheet">
+      <div class="rp-head">
+        <h1 id="rTitle"></h1>
+        <p id="rSubTitle"></p>
+      </div>
+      <div class="rp-info">
+        <div><b>ID:</b> <span id="rId">—</span></div>
+        <div><b>ชื่อ:</b> <span id="rName">—</span></div>
+        <div><b>ธาตุเจ้าเรือน:</b> <span id="rDhatu">—</span></div>
+        <div><b>เวลาทดสอบ:</b> <span id="rTime">—</span></div>
+      </div>
+      <div class="rp-summary">
+        <b>ข้อสรุปเชิงวิเคราะห์:</b> <span id="rSummary"></span><br>
+        <b>แนวทางหลัก:</b> <span id="rApproach"></span>
+      </div>
+      <div class="cols">
+        <div class="col-l">
+          <h2 class="sec" id="rDomTitle">การวิเคราะห์ธรรมนามัย ๓ ประการ</h2>
+          <table class="rt">
+            <thead><tr><th>องค์ประกอบ</th><th>คะแนนที่ได้</th><th>ร้อยละ (%)</th><th>การประเมิน</th></tr></thead>
+            <tbody id="rDomains"></tbody>
+          </table>
+          <h2 class="sec" id="rElTitle">การประเมินสภาวะธาตุ ๔</h2>
+          <div id="rElements"></div>
+          <h2 class="sec" id="rRoutineTitle"></h2>
+          <table class="routine">
+            <thead><tr><th style="width:25%">เวลา (กาลสมุฏฐาน)</th><th>กิจกรรมส่งเสริมสุขภาพบำบัด (ตามหลักธรรมนามัย)</th></tr></thead>
+            <tbody id="rRoutine"></tbody>
+          </table>
+        </div>
+        <div class="col-r">
+          <div class="scorebox">
+            <h3 id="rScoreTitle">คะแนนสมดุลองค์รวม</h3>
+            <div class="big"><span id="rBalance">0</span><span class="unit"> / 100 คะแนน</span></div>
+            <p class="fn" id="rScoreNote"></p>
+          </div>
+          <h2 class="sec">เป้าหมายการปรับสมดุล</h2>
+          <div class="kv"><span class="k">สถานะปัจจุบัน</span><span class="v" id="rGroup">—</span></div>
+          <div class="kv"><span class="k">ระดับความเครียดสะสม</span><span class="v" id="rStress">—</span></div>
+          <div class="kv"><span class="k">คุณภาพการนอนหลับ</span><span class="v" id="rSleep">—</span></div>
+          <h2 class="sec">การประเมินความเสี่ยง</h2>
+          <table class="rt dark">
+            <thead><tr><th>ตัวชี้วัด</th><th>ผลประเมิน</th></tr></thead>
+            <tbody id="rRisks"></tbody>
+          </table>
+          <h2 class="sec" id="rSvcTitle">บริการที่แนะนำ</h2>
+          <div id="rServices"></div>
+          <p class="disclaimer" id="rDisclaimer"></p>
+        </div>
+      </div>
+      <div class="rp-foot">
+        <span id="rFootOrg"></span>
+        <span id="rFootId">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EDITOR ================= -->
+<div id="editor">
+  <div class="ed-bar">
+    <h2>แก้ไขแบบสอบถามและผลลัพธ์</h2>
+    <span class="saved" id="edSaved">บันทึกแล้ว ✓</span>
+    <div class="sp"></div>
+    <button class="btn ghost sm" id="edExport" type="button">ส่งออก JSON</button>
+    <button class="btn ghost sm" id="edImport" type="button">นำเข้า JSON</button>
+    <button class="btn danger sm" id="edReset" type="button">คืนค่าเริ่มต้น</button>
+    <button class="btn sm" id="edClose" type="button">เสร็จสิ้น</button>
+    <input type="file" id="edFile" accept="application/json" style="display:none">
+  </div>
+  <div class="ed-tabs" id="edTabs"></div>
+  <div class="ed-body" id="edBody"></div>
+</div>
+
+<script>
+/* ==================================================================
+   ค่าเริ่มต้น (ถอดจาก Google Sheet + รูปแบบรายงานต้นฉบับ)
+   ================================================================== */
+const DEFAULT_CFG = {
+  org:{
+    brand:'SIKHAREE WELLNESS & SPA',
+    title:'รายงานการวิเคราะห์สมดุลองค์รวม',
+    subtitle:'สิขรี เวลเนส แอนด์ สปา (Sikharee Wellness & Spa, Chiang Mai)',
+    footer:'สิขรี เวลเนส แอนด์ สปา · เชียงใหม่',
+    idPrefix:'SK',
+    scoreTitle:'คะแนนสมดุลองค์รวม',
+    scoreNote:'*คะแนนรวมสะท้อนถึงมูลค่าความสมดุลของร่างกายและจิตใจ ผู้ที่อยู่ในภาวะสมดุลจะได้คะแนนเข้าใกล้ 100 คะแนน',
+    domTitle:'การวิเคราะห์ธรรมนามัย ๓ ประการ',
+    elTitle:'การประเมินสภาวะธาตุ ๔',
+    svcTitle:'บริการที่แนะนำ (สิขรี เวลเนส)',
+    disclaimer:'*รายงานนี้ประมวลผลตามหลักเวชกรรมแผนไทยประยุกต์ เพื่อเป็นแนวทางในการดูแลสุขภาพเบื้องต้น ไม่ใช่การวินิจฉัยทางการแพทย์แผนปัจจุบัน',
+    intakeTitle:'ข้อมูลผู้รับบริการ',
+    intakeSub:'กรอกข้อมูลเบื้องต้นก่อนเริ่มแบบประเมิน ข้อมูลนี้จะแสดงบนหัวรายงาน'
+  },
+  scale:[
+    {s:'ไม่เคยมี',   d:'สุขภาพดีประจำ'},
+    {s:'นานๆ ครั้ง', d:'1–2 ครั้ง/สัปดาห์'},
+    {s:'บ่อย',       d:'3–4 ครั้ง/สัปดาห์'},
+    {s:'ทุกวัน',     d:'กระทบชีวิตประจำวัน'}
+  ],
+  elements:[
+    {key:'earth', name:'ปฐวีธาตุ (ดิน)'},
+    {key:'water', name:'อาโปธาตุ (น้ำ)'},
+    {key:'wind',  name:'วาโยธาตุ (ลม)'},
+    {key:'fire',  name:'เตโชธาตุ (ไฟ)'}
+  ],
+  groups:[
+    {key:'kaya',    name:'กายานามัย',  short:'โครงสร้าง',  sub:'โครงสร้างร่างกาย การเคลื่อนไหว และความตึงตัวของกล้ามเนื้อ'},
+    {key:'jitta',   name:'จิตตานามัย', short:'อารมณ์',     sub:'อารมณ์ ความเครียด การพักผ่อนของจิตใจ และคุณภาพการนอน'},
+    {key:'chivita', name:'ชีวิตานามัย', short:'พฤติกรรม',  sub:'พฤติกรรมการกิน การขับถ่าย และสภาพแวดล้อมรอบตัว'}
+  ],
+  questions:[
+    {g:'kaya',    el:'wind',  tag:'', t:'การอยู่ในอิริยาบถเดิมนานเกิน 2 ชั่วโมง หรือมีอาการชา ยึดติด เคลื่อนไหวไม่คล่องตัว'},
+    {g:'kaya',    el:'earth', tag:'', t:'อาการปวด ตึง ร้าว บริเวณกล้ามเนื้อและข้อต่อ'},
+    {g:'kaya',    el:'earth', tag:'', t:'ขาดการยืดเหยียดหรือออกกำลังกาย'},
+    {g:'jitta',   el:'fire',  tag:'', t:'ความรู้สึกหงุดหงิด เครียด หรือวิตกกังวล'},
+    {g:'jitta',   el:'water', tag:'sleep', t:'ปัญหาการนอนหลับ (หลับยาก, ตื่นกลางดึก, ตื่นมาไม่สดชื่น)'},
+    {g:'jitta',   el:'wind',  tag:'', t:'การขาดช่วงเวลาพักผ่อนจิตใจหรือการทำสมาธิ'},
+    {g:'chivita', el:'fire',  tag:'', t:'การทานอาหารรสจัด ของทอด หรือทานไม่ตรงเวลา'},
+    {g:'chivita', el:'water', tag:'', t:'ปัญหาการขับถ่าย หรือการกลั้นอุจจาระ/ปัสสาวะ'},
+    {g:'chivita', el:'wind',  tag:'', t:'การอยู่ในสภาพแวดล้อมที่ร้อนจัด เย็นจัด หรืออากาศไม่ถ่ายเท'}
+  ],
+  domainStates:[
+    {maxPct:38,  t:'สมดุลดี',  c:'green'},
+    {maxPct:72,  t:'มาตรฐาน',  c:''},
+    {maxPct:100, t:'เฝ้าระวัง', c:'red'}
+  ],
+  elementStates:[
+    {maxPct:24,  t:'ปกติ',           c:'green'},
+    {maxPct:49,  t:'หย่อน',           c:'amber'},
+    {maxPct:74,  t:'กำเริบเล็กน้อย',  c:'amber'},
+    {maxPct:100, t:'กำเริบ',          c:'red'}
+  ],
+  stressFrom:'jitta',
+  risks:[
+    {name:'กลุ่มอาการออฟฟิศซินโดรม', from:'kaya',    levels:['ไม่พบ','ระยะเริ่มต้น','ระยะชัดเจน','ระยะเรื้อรัง']},
+    {name:'ภาวะหทัยวาต (ความกังวล)', from:'jitta',   levels:['ปกติ','เล็กน้อย','ปานกลาง','สูง']},
+    {name:'ไฟย่อยอาหาร (ปาจกเตโช)',  from:'chivita', levels:['ปกติ','อ่อนกำลัง','กำเริบ','พิการ']}
+  ],
+  sleepLevels:['ดีมาก','ปกติ','ต่ำกว่าเกณฑ์','ต่ำกว่าเกณฑ์มาก'],
+  tiers:[
+    {
+      key:'green', min:0, max:9, color:'green', label:'กลุ่มเสี่ยงน้อย (0-9)',
+      summary:'ร่างกายและจิตใจอยู่ในเกณฑ์สมดุลดี ธาตุทั้ง 4 ทำงานประสานกันได้ดี เป้าหมายของการดูแลจึงไม่ใช่การรักษาอาการเจ็บป่วย แต่คือการส่งเสริมสุขภาพ (Health Promotion) และการชะลอวัย (Longevity) เพื่อรักษาสมดุลธาตุให้อยู่ในสภาวะที่เหมาะสมไปนานๆ',
+      approach:'ส่งเสริม — แนะนำการดูแลสุขภาพพื้นฐานเพื่อการผ่อนคลาย หรือชาสมุนไพรบำรุงธาตุ',
+      routineTitle:'ตารางกิจวัตรประจำวัน: สมดุลแห่งกาลเวลา',
+      routine:[
+        ['06:00 - 08:00','ช่วงเสมหะ','<b>ชีวิตานามัย:</b> ดื่มน้ำอุ่น 1–2 แก้วทันทีที่ตื่น เพื่อกระตุ้นลำไส้และขับถ่ายให้เป็นเวลา<br><b>กายานามัย:</b> ยืดเหยียดด้วยท่าฤๅษีดัดตนเบาๆ เช่น ท่าแก้เกียจ 5–10 นาที เพื่อเปิดประตูลม'],
+        ['08:00 - 10:00','ช่วงเสมหะ','<b>ชีวิตานามัย:</b> ทานมื้อเช้าที่มีรสอุ่น ขม หรือฝาดจางๆ ลดความหนืดของเสมหะ หลีกเลี่ยงของมันทอด'],
+        ['10:00 - 14:00','ช่วงปิตตะ','<b>ชีวิตานามัย:</b> ทานมื้อเที่ยงเป็นมื้อหลัก หลีกเลี่ยงอาหารรสจัดจ้านที่จะไปสุมไฟปิตตะ<br><b>จิตตานามัย:</b> หากทำงานหน้าคอมพิวเตอร์ ควรพักสายตา 5 นาที ทุกๆ ชั่วโมง หายใจเข้าออกลึกๆ'],
+        ['14:00 - 18:00','ช่วงวาตะ','<b>กายานามัย:</b> ช่วงเวลาที่เหมาะสมที่สุดในการออกกำลังกายหรือทำกิจกรรมที่ต้องเคลื่อนไหว<br><b>ชีวิตานามัย:</b> หากล้า จิบชาสมุนไพรกลิ่นหอม เช่น ชาดอกไม้ ชามะลิ เพื่อคุมลมไม่ให้ตีขึ้นเบื้องบน'],
+        ['18:00 - 20:00','ช่วงเสมหะ','<b>ชีวิตานามัย:</b> มื้อเย็นย่อยง่าย รสจืดหรือเย็น เช่น แกงจืด ผักต้ม ไม่ควรทานอิ่มเกินไป<br><b>กายานามัย:</b> อาบน้ำอุ่นเพื่อคลายความตึงเครียดของกล้ามเนื้อ'],
+        ['20:00 - 22:00','ช่วงเข้าสู่ปิตตะ','<b>จิตตานามัย:</b> งดรับสื่อดิจิทัล ทำสมาธิหรือฟังเสียงธรรมชาติ 15 นาที<br><b>ชีวิตานามัย:</b> เข้านอนก่อน 22:00 น. ให้ธาตุไฟทำงานซ่อมแซมร่างกายระหว่างหลับได้เต็มที่']
+      ],
+      services:[['1. นวดผ่อนคลายส่งเสริมสุขภาพ','60 นาที'],['2. อบไอน้ำสมุนไพร','20 นาที'],['3. ชาบำรุงธาตุเจ้าเรือน','สูตรตามธาตุ']]
+    },
+    {
+      key:'yellow', min:10, max:18, color:'amber', label:'กลุ่มเสี่ยงปานกลาง (10-18)',
+      summary:'ร่างกายและจิตใจเริ่มส่งสัญญาณความไม่สมดุลทางธาตุอย่างเห็นได้ชัด เช่น ลมพัดติดขัด (ตึงบ่า ไหล่ ปวดเมื่อยจากออฟฟิศซินโดรม) ธาตุไฟกำเริบ (เครียดสะสม ท้องอืด ย่อยอาหารไม่ดี) และลมในหัวใจ (หทัยวาต) แปรปรวน ทำให้นอนหลับไม่สนิท',
+      approach:'ป้องกัน — นวดปรับสมดุลธาตุ จ่ายท่าฤๅษีดัดตนเฉพาะส่วน ปรับพฤติกรรมการกินตามธาตุเจ้าเรือน',
+      routineTitle:'ตารางกิจวัตรประจำวัน: บำบัดและปรับสมดุล',
+      routine:[
+        ['06:00 - 08:00','ช่วงเสมหะ','<b>กายานามัย (เปิดประตูลม):</b> ดื่มน้ำอุ่นผสมน้ำมะนาวหรือขิงฝานบางๆ เพื่อปลุกไฟย่อย (เตโชธาตุ) · ฝึกท่าฤๅษีดัดตนเฉพาะจุด 15 นาที เน้นท่าแก้ลมขัดข้อ คอ และไหล่ เพื่อระบายลมที่อั้นในเส้นเอ็น'],
+        ['08:00 - 10:00','ช่วงเสมหะ','<b>ชีวิตานามัย (ปลุกไฟย่อย):</b> มื้อเช้ามีสมุนไพรรสเผ็ดร้อนอ่อนๆ เช่น ขิง ข่า ตะไคร้ พริกไทย · หลีกเลี่ยงนม เนย หรืออาหารฤทธิ์เย็นจัดที่ทำให้เกิดลมในทางเดินอาหาร'],
+        ['10:00 - 14:00','ช่วงปิตตะ','<b>จิตตานามัย (คุมธาตุไฟ):</b> ฝึกปราณายามะ หายใจเข้า–ออกลึกช้าสลับรูจมูก 5 นาที ทุกๆ 2 ชั่วโมง<br><b>ชีวิตานามัย:</b> มื้อเที่ยงเน้นรสจืด เย็น ขม เช่น มะระ ผักบุ้ง แกงจืด เพื่อดับพิษร้อน'],
+        ['14:00 - 18:00','ช่วงวาตะ','<b>ชีวิตานามัย (ขับลมปลายปัตคาต):</b> จิบชารสสุขุมหอมขับลม เช่น ชามะตูมผสมตะไคร้ หรือชากะเพราอุ่น<br><b>กายานามัย:</b> ลุกขึ้นยืดเหยียดอย่างน้อย 5 นาทีทุกชั่วโมง เพื่อสลายลมติดขัด'],
+        ['18:00 - 20:00','ช่วงเสมหะ','<b>ชีวิตานามัย:</b> มื้อเย็นย่อยง่ายมาก เช่น โจ๊ก แกงเลียง ซุปผัก ไม่ทานเนื้อสัตว์ใหญ่<br><b>กายานามัย:</b> แช่เท้าด้วยน้ำต้มสมุนไพรอุ่น (ขิง ตะไคร้ ผิวมะกรูด เกลือ) 15–20 นาที ดึงความร้อนลงเบื้องล่าง'],
+        ['20:00 - 22:00','ช่วงเข้าสู่ปิตตะ','<b>จิตตานามัย (สยบหทัยวาต):</b> งดมือถือและหน้าจอคอมพิวเตอร์เด็ดขาด · นั่งสมาธิรู้ลมหายใจ “อานาปานสติ” 10–15 นาที · เข้านอนไม่เกิน 22:00 น.']
+      ],
+      services:[['1. นวดปรับสมดุลธาตุ','90 นาที'],['2. ประคบร้อนสมุนไพร','30 นาที'],['3. ชาปรับสมดุลธาตุ','สูตรมะตูม-ตะไคร้']]
+    },
+    {
+      key:'red', min:19, max:27, color:'red', label:'กลุ่มเสี่ยงมาก (19-27)',
+      summary:'ร่างกายและจิตใจอยู่ในสภาวะที่ธาตุทั้ง 4 ทำงานผิดปกติอย่างรุนแรง (ธาตุพิการ หรือธาตุกำเริบขั้นสุด) เช่น ปวดเรื้อรังจนรบกวนการใช้ชีวิต นอนไม่หลับติดต่อกันยาวนาน ท้องผูกเรื้อรัง หรือเครียดสะสมจนส่งผลต่อระบบภูมิคุ้มกันและฮอร์โมน',
+      approach:'บำบัดรักษา — ต้องได้รับการประเมินเชิงลึก จ่ายยาสมุนไพรรักษาอาการ นวดรักษาเส้นประธาน หรือใช้หัตถการเฉพาะทาง',
+      routineTitle:'ตารางกิจวัตรประจำวัน: ฟื้นฟูธาตุเชิงลึก',
+      routine:[
+        ['06:00 - 08:00','ช่วงเสมหะ','<b>ชีวิตานามัย (ดีท็อกซ์ของเสีย):</b> ดื่มน้ำอุ่นจัด 2 แก้ว หรือจิบชาตรีผลาปรับสมดุลลำไส้ เพื่อกวาดล้างเมือกมันและกระตุ้นการขับถ่ายให้หมดจด<br><b>กายานามัย (คลายเส้นเอ็น):</b> ใช้ลูกประคบร้อนประคบคอ บ่า ไหล่ หรือจุดที่ปวดเรื้อรัง 15 นาที เพื่อสลายลมปลายปัตคาตที่จับตัวแข็ง'],
+        ['08:00 - 10:00','ช่วงเสมหะ','<b>ชีวิตานามัย (ฟื้นฟูไฟย่อย):</b> มื้อเช้าย่อยง่ายที่สุด เช่น ข้าวต้ม หรือซุปอุ่นๆ หลีกเลี่ยงอาหารแปรรูป ของทอด ของมัน และผลิตภัณฑ์นมวัวโดยเด็ดขาด'],
+        ['10:00 - 14:00','ช่วงปิตตะ','<b>ชีวิตานามัย:</b> ทานมื้อเที่ยงตรงเวลา ห้ามปล่อยให้ท้องว่างจนเกิดลมในกระเพาะ<br><b>จิตตานามัย (ตัดวงจรความเครียด):</b> ละสายตาจากงานทุกๆ 45 นาที หลับตาทำสมาธิบำบัด หรือหายใจเข้าลึก–ออกยาว 3 นาที'],
+        ['14:00 - 18:00','ช่วงวาตะ','<b>กายานามัย (หยุดพักการใช้กล้ามเนื้อ):</b> หากปวดรุนแรง ห้ามฝืนยืดเหยียดหรือนวดเค้นเอง ให้ประคบร้อน หรือทานยาสมุนไพรบรรเทาปวดตามที่แพทย์แผนไทยสั่ง<br><b>ชีวิตานามัย:</b> จิบน้ำอุ่นหรือชาฤทธิ์สุขุมตลอดบ่าย ป้องกันภาวะขาดน้ำที่ทำให้เส้นเอ็นแห้งตึง'],
+        ['18:00 - 20:00','ช่วงเสมหะ','<b>ชีวิตานามัย (ลดภาระร่างกาย):</b> มื้อเย็นน้อยที่สุดและก่อน 19:00 น. หากไม่หิวสามารถงดมื้อเย็น (IF) เพื่อให้กระเพาะได้พัก<br><b>กายานามัย:</b> อาบน้ำอุ่นจัดหรือแช่น้ำอุ่นทั้งตัว กระตุ้นระบบไหลเวียนเลือด'],
+        ['20:00 - 22:00','ช่วงเข้าสู่ปิตตะ','<b>จิตตานามัย (ชัตดาวน์ระบบประสาท):</b> งดหน้าจอทุกชนิดหลัง 20:00 น. · นวดน้ำมันสมุนไพรอุ่นบริเวณฝ่าเท้าและท้ายทอยเบาๆ · จัดห้องนอนให้มืดสนิทและเงียบ เข้านอนทันทีเมื่อง่วง ห้ามฝืนร่างกาย']
+      ],
+      services:[['1. นวดรักษาเส้นประธาน','120 นาที'],['2. ประคบร้อน + แช่เท้าสมุนไพร','45 นาที'],['3. ชาตรีผลาปรับสมดุลลำไส้','สูตรเข้มข้น']]
+    }
+  ]
+};
+
+const MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+              'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const DHATU=['วาตะ (ลม)','ปิตตะ (ไฟ)','อาโป (น้ำ)','ปถวี (ดิน)'];
+const CLR={green:'c-green',amber:'c-amber',red:'c-red','':''};
+const BG ={green:'bg-green',amber:'bg-amber',red:'bg-red','':'bg-green'};
+const CFG_KEY='sk_cfg_v2';
+
+/* ================= state ================= */
+let CFG  = loadCfg();
+let ans  = [];
+let step = 0;                    // 0 = ข้อมูล, 1..n = หมวด
+const intake = {name:'',id:'',month:'',dhatu:DHATU[0]};
+const $ = id => document.getElementById(id);
+
+function loadCfg(){
+  try{
+    const raw = localStorage.getItem(CFG_KEY);
+    if(raw) return Object.assign(structuredClone(DEFAULT_CFG), JSON.parse(raw));
+  }catch(e){}
+  return structuredClone(DEFAULT_CFG);
+}
+function saveCfg(){
+  localStorage.setItem(CFG_KEY, JSON.stringify(CFG));
+  const s=$('edSaved'); s.classList.add('on'); clearTimeout(saveCfg._t);
+  saveCfg._t=setTimeout(()=>s.classList.remove('on'),1400);
+}
+function maxScore(){ return CFG.questions.length*(CFG.scale.length-1) }
+function qIdxOf(gkey){ return CFG.questions.map((q,i)=>q.g===gkey?i:-1).filter(i=>i>=0) }
+function pad(n){ return String(n).padStart(2,'0') }
+function genId(){
+  const d=new Date(), yy=pad(d.getFullYear()%100), mm=pad(d.getMonth()+1);
+  let n=Number(localStorage.getItem('sk_seq')||'0')+1;
+  localStorage.setItem('sk_seq',String(n));
+  return `${CFG.org.idPrefix}-${yy}${mm}-${String(n).padStart(3,'0')}`;
+}
+
+/* ================= WIZARD ================= */
+function resetAnswers(){ ans = new Array(CFG.questions.length).fill(null); }
+
+function renderWizard(){
+  const total = CFG.groups.length + 1;
+  $('wzOrg').textContent = CFG.org.brand;
+
+  const p=$('wzProgress'); p.innerHTML='';
+  for(let i=0;i<total;i++){
+    const b=document.createElement('i');
+    b.className = i<step ? 'done' : i===step ? 'now' : '';
+    p.appendChild(b);
+  }
+  $('wzCount').textContent = `ขั้นตอนที่ ${step+1} จาก ${total}`;
+
+  const c=$('wzContent'); c.innerHTML=''; c.onchange=null;
+
+  if(step===0){
+    $('wzTitle').textContent = CFG.org.intakeTitle;
+    $('wzSub').textContent   = CFG.org.intakeSub;
+    c.innerHTML = `
+      <div class="grid">
+        <div class="field"><label for="fName">ชื่อ – นามสกุล</label>
+          <input id="fName" type="text" placeholder="เช่น คุณวิภา รักษ์สุขภาพ" autocomplete="name"></div>
+        <div class="field"><label for="fId">รหัสผู้รับบริการ (ID)</label>
+          <input id="fId" type="text"><div class="sub">สร้างอัตโนมัติ · แก้ไขได้</div></div>
+        <div class="field"><label for="fMonth">เดือนเกิด</label>
+          <select id="fMonth"><option value="">— ไม่ระบุ —</option>${
+            MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}</select>
+          <div class="sub">ใช้คำนวณธาตุเจ้าเรือนตามตำราแพทย์แผนไทย</div></div>
+        <div class="field"><label for="fDhatu">ธาตุเจ้าเรือน</label>
+          <select id="fDhatu">${DHATU.map(d=>`<option>${d}</option>`).join('')}</select>
+          <div class="sub">เลือกเดือนเกิดแล้วระบบเติมให้ · ปรับแก้เองได้</div></div>
+      </div>
+      <div class="scalecard">
+        <h4>เกณฑ์การให้คะแนน (ข้อละ 0–${CFG.scale.length-1} คะแนน · ทั้งหมด ${CFG.questions.length} ข้อ)</h4>
+        <ul>${CFG.scale.map((s,i)=>`<li><b>${i} — ${s.s}</b> · ${s.d}</li>`).join('')}</ul>
+      </div>`;
+    $('fName').value  = intake.name;
+    $('fId').value    = intake.id || (intake.id = genId());
+    $('fMonth').value = intake.month;
+    $('fDhatu').value = intake.dhatu;
+    $('fName').oninput  = e=>intake.name=e.target.value;
+    $('fId').oninput    = e=>intake.id=e.target.value;
+    $('fDhatu').onchange= e=>intake.dhatu=e.target.value;
+    $('fMonth').onchange= e=>{
+      intake.month=e.target.value;
+      if(e.target.value===''){return}
+      const n=Number(e.target.value);
+      intake.dhatu = n<=2?'ปิตตะ (ไฟ)' : n<=5?'อาโป (น้ำ)' : n<=8?'วาตะ (ลม)' : 'ปถวี (ดิน)';
+      $('fDhatu').value = intake.dhatu;
+    };
+    $('wzLeft').textContent = '';
+    $('btnNext').textContent = 'เริ่มทำแบบประเมิน →';
+  }else{
+    const g = CFG.groups[step-1];
+    $('wzTitle').textContent = g.name;
+    $('wzSub').textContent   = g.sub;
+    const idxs = qIdxOf(g.key);
+    c.innerHTML = idxs.map(i=>`
+      <div class="q">
+        <div class="qt"><i>${i+1}.</i>${CFG.questions[i].t}</div>
+        <div class="opts">${CFG.scale.map((s,v)=>`
+          <label class="opt">
+            <input type="radio" name="q${i}" value="${v}" ${ans[i]===v?'checked':''}>
+            <span><b>${v}</b>${s.s}<br>${s.d}</span>
+          </label>`).join('')}</div>
+      </div>`).join('');
+    c.onchange = e=>{
+      if(e.target.type!=='radio') return;
+      ans[Number(e.target.name.slice(1))] = Number(e.target.value);
+      updateNav();
+    };
+    $('btnNext').textContent = step===CFG.groups.length ? 'ดูผลการประเมิน →' : 'ถัดไป →';
+  }
+
+  $('btnPrev').style.visibility = step===0 ? 'hidden' : 'visible';
+  updateNav();
+  window.scrollTo(0,0);
+}
+
+function updateNav(){
+  if(step===0){ $('btnNext').disabled=false; $('wzLeft').textContent=''; return }
+  const idxs = qIdxOf(CFG.groups[step-1].key);
+  const done = idxs.filter(i=>ans[i]!==null).length;
+  $('wzLeft').textContent = done<idxs.length
+    ? `ตอบแล้ว ${done} จาก ${idxs.length} ข้อในหมวดนี้`
+    : `ตอบครบทุกข้อในหมวดนี้แล้ว`;
+  $('btnNext').disabled = done<idxs.length;
+}
+
+$('btnNext').onclick = ()=>{
+  if(step < CFG.groups.length){ step++; renderWizard(); }
+  else showReport();
+};
+$('btnPrev').onclick = ()=>{ if(step>0){ step--; renderWizard(); } };
+
+/* ================= การประมวลผล ================= */
+function domainScore(gkey){ return qIdxOf(gkey).reduce((a,i)=>a+(ans[i]||0),0) }
+function domainMax(gkey){ return qIdxOf(gkey).length*(CFG.scale.length-1) }
+function pickState(list,pct){ return list.find(s=>pct<=s.maxPct) || list[list.length-1] }
+function tierOf(total){
+  return CFG.tiers.find(t=>total>=t.min && total<=t.max)
+      || CFG.tiers[CFG.tiers.length-1];
+}
+function levelIdx(pct,n){ return Math.min(n-1, Math.floor(pct/(100/n))) }
+
+function showReport(){
+  buildReport();
+  $('wizard').style.display='none';
+  reportOpen=true; updateFabs();
+  $('reportView').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function buildReport(){
+  const o=CFG.org;
+  $('rTitle').textContent=o.title;  $('rSubTitle').textContent=o.subtitle;
+  $('rFootOrg').textContent=o.footer; $('rScoreTitle').textContent=o.scoreTitle;
+  $('rScoreNote').textContent=o.scoreNote; $('rDisclaimer').textContent=o.disclaimer;
+  $('rDomTitle').textContent=o.domTitle; $('rElTitle').textContent=o.elTitle;
+  $('rSvcTitle').textContent=o.svcTitle;
+
+  const total = ans.reduce((a,v)=>a+(v||0),0);
+  const tier  = tierOf(total);
+  const balance = Math.round((maxScore()-total)/maxScore()*100);
+
+  const now=new Date();
+  $('rId').textContent   = intake.id || '—';
+  $('rFootId').textContent = 'เลขที่รายงาน ' + (intake.id||'—');
+  $('rName').textContent = intake.name || '—';
+  $('rDhatu').textContent= intake.dhatu;
+  $('rTime').textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} `
+                         + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  $('rSummary').textContent  = tier.summary;
+  $('rApproach').textContent = tier.approach;
+  $('rBalance').textContent  = balance;
+  $('rGroup').innerHTML      = `<span class="${CLR[tier.color]}">${tier.label}</span>`;
+
+  /* ธรรมนามัย */
+  $('rDomains').innerHTML = CFG.groups.map(g=>{
+    const s=domainScore(g.key), m=domainMax(g.key), pct=m?s/m*100:0;
+    const st=pickState(CFG.domainStates,pct);
+    return `<tr><td>${g.name}${g.short?' ('+g.short+')':''}</td>
+      <td class="c">${s.toFixed(1)} (0.0-${m.toFixed(1)})</td>
+      <td class="c">${pct.toFixed(1)}</td>
+      <td class="c ${CLR[st.c]}"><b>${st.t}</b></td></tr>`;
+  }).join('');
+
+  /* ธาตุ ๔ */
+  $('rElements').innerHTML = CFG.elements.map(el=>{
+    const idxs = CFG.questions.map((q,i)=>q.el===el.key?i:-1).filter(i=>i>=0);
+    if(!idxs.length) return '';
+    const m = idxs.length*(CFG.scale.length-1);
+    const pct = Math.round(idxs.reduce((a,i)=>a+(ans[i]||0),0)/m*100);
+    const st = pickState(CFG.elementStates,pct);
+    return `<div class="el">
+      <div class="el-top"><span class="nm">${el.name}</span><span class="st ${CLR[st.c]}">${st.t}</span></div>
+      <div class="bar"><i class="${BG[st.c]}" style="width:${Math.max(pct,4)}%"></i></div></div>`;
+  }).join('');
+
+  /* กิจวัตร */
+  $('rRoutineTitle').textContent = tier.routineTitle;
+  $('rRoutine').innerHTML = tier.routine.map(([tm,ph,act])=>
+    `<tr><td class="tm">${tm}${ph?`<em>(${ph})</em>`:''}</td><td>${act}</td></tr>`).join('');
+
+  /* ความเครียด / การนอน */
+  const sg = CFG.groups.find(g=>g.key===CFG.stressFrom) || CFG.groups[0];
+  const sPct = Math.round(domainScore(sg.key)/(domainMax(sg.key)||1)*100);
+  const sTxt = sPct>=67?'สูง':sPct>=34?'ปานกลาง':'ต่ำ';
+  $('rStress').innerHTML = `<span class="${sPct>=67?'c-red':sPct>=34?'c-amber':'c-green'}">${sTxt} (${sPct}%)</span>`;
+
+  const sleepQ = CFG.questions.findIndex(q=>q.tag==='sleep');
+  const sMax = CFG.scale.length-1;
+  const sVal = sleepQ>=0 ? (ans[sleepQ]||0) : Math.round(sPct/100*sMax);
+  const sLv  = levelIdx(sVal/sMax*100, CFG.sleepLevels.length);
+  $('rSleep').innerHTML = `<span class="${sLv>=2?'c-red':sLv===1?'c-amber':'c-green'}">${CFG.sleepLevels[sLv]}</span>`;
+
+  /* ความเสี่ยง */
+  $('rRisks').innerHTML = CFG.risks.map(r=>{
+    const g = CFG.groups.find(x=>x.key===r.from);
+    const pct = g ? domainScore(g.key)/(domainMax(g.key)||1)*100 : 0;
+    const i = levelIdx(pct, r.levels.length);
+    return `<tr><td>${r.name}</td>
+      <td class="c ${i>=2?'c-red':''}"><b>${r.levels[i]}</b></td></tr>`;
+  }).join('');
+
+  /* บริการ */
+  $('rServices').innerHTML = tier.services.map(([k,v])=>
+    `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+}
+
+$('btnPrint').onclick = ()=>window.print();
+$('btnNew').onclick = ()=>{
+  if(!confirm('เริ่มแบบประเมินใหม่ทั้งหมด? คำตอบและรายงานปัจจุบันจะถูกล้างทิ้ง')) return;
+  resetAnswers(); intake.name=''; intake.id=''; intake.month=''; intake.dhatu=DHATU[0];
+  $('reportView').style.display='none';
+  $('wizard').style.display='flex';
+  reportOpen=false; updateFabs();
+  step=0; renderWizard();
+};
+
+/* ==================================================================
+   EDITOR
+   ================================================================== */
+const TABS=[
+  ['q',   'คำถาม'],
+  ['scale','เกณฑ์การให้คะแนน'],
+  ['tier','การแปรผล / กลุ่มเสี่ยง'],
+  ['routine','ตารางกิจวัตร'],
+  ['svc', 'บริการที่แนะนำ'],
+  ['rep', 'หัวรายงาน / ตัวชี้วัด']
+];
+let edTab='q', edTier=0;
+
+function el(tag,props={},kids=[]){
+  const n=document.createElement(tag);
+  for(const k in props){
+    if(k==='class') n.className=props[k];
+    else if(k==='html') n.innerHTML=props[k];
+    else if(k==='text') n.textContent=props[k];
+    else if(k.startsWith('on')) n[k]=props[k];
+    else n.setAttribute(k,props[k]);
+  }
+  (Array.isArray(kids)?kids:[kids]).forEach(k=>k && n.appendChild(k));
+  return n;
+}
+function fld(label,value,oninput,{type='text',rows=0,opts=null}={}){
+  const wrap=el('div');
+  if(label) wrap.appendChild(el('label',{class:'ed-lab',text:label}));
+  let inp;
+  if(opts){
+    inp=el('select');
+    opts.forEach(([v,t])=>{const o=el('option',{value:v,text:t}); inp.appendChild(o)});
+    inp.value=value;
+    inp.onchange=e=>{oninput(e.target.value); saveCfg()};
+  }else if(rows){
+    inp=el('textarea',{rows});
+    inp.value=value;
+    inp.oninput=e=>oninput(e.target.value);
+    inp.onblur=saveCfg;
+  }else{
+    inp=el('input',{type});
+    inp.value=value;
+    inp.oninput=e=>oninput(type==='number'?Number(e.target.value):e.target.value);
+    inp.onblur=saveCfg;
+  }
+  wrap.appendChild(inp);
+  return wrap;
+}
+function iconBtn(txt,title,fn,cls=''){
+  return el('button',{class:'ico '+cls,type:'button',title,text:txt,onclick:fn});
+}
+function moveItem(arr,i,d){
+  const j=i+d; if(j<0||j>=arr.length) return;
+  [arr[i],arr[j]]=[arr[j],arr[i]]; saveCfg(); renderEditor();
+}
+
+function renderEditor(){
+  const tabs=$('edTabs'); tabs.innerHTML='';
+  TABS.forEach(([k,t])=>tabs.appendChild(
+    el('button',{class:'ed-tab'+(edTab===k?' on':''),type:'button',text:t,
+                 onclick:()=>{edTab=k; renderEditor()}})));
+  const b=$('edBody'); b.innerHTML='';
+  ({q:paneQ, scale:paneScale, tier:paneTier, routine:paneRoutine, svc:paneSvc, rep:paneRep})[edTab](b);
+}
+
+/* ---- คำถาม ---- */
+function paneQ(b){
+  b.appendChild(el('div',{class:'hintbox',html:
+    'แก้ข้อความคำถาม ย้ายลำดับ เพิ่มหรือลบข้อได้ตามต้องการ · <b>หมวด</b> คือหน้าที่คำถามจะไปปรากฏ · '+
+    '<b>ธาตุ</b> ใช้คำนวณแถบ “การประเมินสภาวะธาตุ ๔” · <b>ป้ายพิเศษ</b> ตั้งเป็น “คุณภาพการนอน” '+
+    'กับข้อที่ถามเรื่องการนอน เพื่อให้รายงานดึงไปแสดงในช่องคุณภาพการนอนหลับ'}));
+
+  const gcard=el('div',{class:'ed-card'},[el('h3',{text:'หมวด (หน้าของแบบสอบถาม)'})]);
+  CFG.groups.forEach((g,i)=>{
+    const it=el('div',{class:'ed-item'});
+    const top=el('div',{class:'top'},[
+      el('span',{class:'n',text:`หน้า ${i+2}`}), el('span',{class:'sp'}),
+      iconBtn('↑','เลื่อนขึ้น',()=>moveItem(CFG.groups,i,-1)),
+      iconBtn('↓','เลื่อนลง',()=>moveItem(CFG.groups,i,1))
+    ]);
+    it.appendChild(top);
+    it.appendChild(el('div',{class:'cols2'},[
+      fld('ชื่อหมวด', g.name, v=>g.name=v),
+      fld('คำในวงเล็บบนรายงาน', g.short, v=>g.short=v)
+    ]));
+    it.appendChild(fld('คำอธิบายใต้หัวเรื่อง', g.sub, v=>g.sub=v));
+    gcard.appendChild(it);
+  });
+  b.appendChild(gcard);
+
+  const qcard=el('div',{class:'ed-card'},[
+    el('h3',{},[document.createTextNode('คำถาม'),
+      el('span',{class:'tag',text:`${CFG.questions.length} ข้อ · เต็ม ${maxScore()} คะแนน`})])]);
+  CFG.questions.forEach((q,i)=>{
+    const it=el('div',{class:'ed-item'});
+    it.appendChild(el('div',{class:'top'},[
+      el('span',{class:'n',text:`ข้อ ${i+1}`}), el('span',{class:'sp'}),
+      iconBtn('↑','เลื่อนขึ้น',()=>moveItem(CFG.questions,i,-1)),
+      iconBtn('↓','เลื่อนลง',()=>moveItem(CFG.questions,i,1)),
+      iconBtn('✕','ลบข้อนี้',()=>{
+        if(CFG.questions.length<=1) return alert('ต้องมีคำถามอย่างน้อย 1 ข้อ');
+        if(!confirm('ลบคำถามข้อนี้?')) return;
+        CFG.questions.splice(i,1); saveCfg(); resetAnswers(); renderEditor();
+      },'del')
+    ]));
+    it.appendChild(fld('ข้อความคำถาม', q.t, v=>q.t=v, {rows:2}));
+    it.appendChild(el('div',{class:'cols3'},[
+      fld('หมวด', q.g, v=>{q.g=v; renderEditor()}, {opts:CFG.groups.map(g=>[g.key,g.name])}),
+      fld('ธาตุที่เกี่ยวข้อง', q.el, v=>q.el=v, {opts:CFG.elements.map(e=>[e.key,e.name])}),
+      fld('ป้ายพิเศษ', q.tag||'', v=>q.tag=v, {opts:[['','— ไม่มี —'],['sleep','คุณภาพการนอน']]})
+    ]));
+    qcard.appendChild(it);
+  });
+  qcard.appendChild(el('button',{class:'btn ghost sm',type:'button',text:'+ เพิ่มคำถาม',
+    onclick:()=>{
+      CFG.questions.push({g:CFG.groups[0].key, el:CFG.elements[0].key, tag:'', t:'คำถามใหม่'});
+      saveCfg(); resetAnswers(); renderEditor();
+    }}));
+  b.appendChild(qcard);
+}
+
+/* ---- เกณฑ์คะแนน ---- */
+function paneScale(b){
+  b.appendChild(el('div',{class:'hintbox',html:
+    'ตัวเลือกคำตอบของทุกข้อ · คะแนนคือลำดับของตัวเลือก (เริ่มที่ 0) '+
+    'เพิ่มหรือลดตัวเลือกได้ คะแนนเต็มจะคำนวณใหม่ให้อัตโนมัติ'}));
+  const c=el('div',{class:'ed-card'},[
+    el('h3',{},[document.createTextNode('ตัวเลือกคำตอบ'),
+      el('span',{class:'tag',text:`ข้อละ 0–${CFG.scale.length-1} คะแนน`})])]);
+  CFG.scale.forEach((s,i)=>{
+    const it=el('div',{class:'ed-item'});
+    it.appendChild(el('div',{class:'top'},[
+      el('span',{class:'n',text:`${i} คะแนน`}), el('span',{class:'sp'}),
+      iconBtn('✕','ลบตัวเลือก',()=>{
+        if(CFG.scale.length<=2) return alert('ต้องมีอย่างน้อย 2 ตัวเลือก');
+        CFG.scale.splice(i,1); saveCfg(); resetAnswers(); renderEditor();
+      },'del')
+    ]));
+    it.appendChild(el('div',{class:'cols2'},[
+      fld('ข้อความหลัก', s.s, v=>s.s=v),
+      fld('คำอธิบายย่อย', s.d, v=>s.d=v)
+    ]));
+    c.appendChild(it);
+  });
+  c.appendChild(el('button',{class:'btn ghost sm',type:'button',text:'+ เพิ่มตัวเลือก',
+    onclick:()=>{CFG.scale.push({s:'ตัวเลือกใหม่',d:''}); saveCfg(); resetAnswers(); renderEditor()}}));
+  b.appendChild(c);
+}
+
+/* ---- การแปรผล ---- */
+function paneTier(b){
+  b.appendChild(el('div',{class:'hintbox',html:
+    `คะแนนเต็มปัจจุบันคือ <b>${maxScore()}</b> คะแนน · ตั้งช่วงคะแนนของแต่ละกลุ่มให้ครอบคลุม 0–${maxScore()} `+
+    'ข้อความในนี้จะไปแสดงบนรายงานทั้งหมด'}));
+
+  CFG.tiers.forEach((t,i)=>{
+    const c=el('div',{class:'ed-card'},[
+      el('h3',{},[document.createTextNode(t.label||'กลุ่ม '+(i+1)),
+        el('span',{class:'tag',text:`${t.min}–${t.max} คะแนน`})])]);
+    c.appendChild(el('div',{class:'cols3'},[
+      fld('คะแนนต่ำสุด', t.min, v=>t.min=v, {type:'number'}),
+      fld('คะแนนสูงสุด', t.max, v=>t.max=v, {type:'number'}),
+      fld('สีแสดงผล', t.color, v=>t.color=v,
+          {opts:[['green','เขียว (ปกติ)'],['amber','เหลือง (เฝ้าระวัง)'],['red','แดง (เสี่ยง)']]})
+    ]));
+    c.appendChild(fld('ชื่อกลุ่ม (แสดงในช่องสถานะปัจจุบัน)', t.label, v=>{t.label=v}));
+    c.appendChild(fld('ข้อสรุปเชิงวิเคราะห์', t.summary, v=>t.summary=v, {rows:4}));
+    c.appendChild(fld('แนวทางหลัก', t.approach, v=>t.approach=v, {rows:2}));
+    c.appendChild(fld('หัวข้อตารางกิจวัตร', t.routineTitle, v=>t.routineTitle=v));
+    b.appendChild(c);
+  });
+
+  const d=el('div',{class:'ed-card'},[el('h3',{text:'คำตัดสินรายหมวด (ตารางธรรมนามัย)'})]);
+  d.appendChild(el('div',{class:'hintbox',text:'อ่านจากบนลงล่าง: ใช้แถวแรกที่ร้อยละไม่เกินค่าที่กำหนด'}));
+  CFG.domainStates.forEach((s,i)=>{
+    d.appendChild(el('div',{class:'cols3'},[
+      fld(i===0?'ร้อยละไม่เกิน':'', s.maxPct, v=>s.maxPct=v, {type:'number'}),
+      fld(i===0?'ข้อความ':'', s.t, v=>s.t=v),
+      fld(i===0?'สี':'', s.c, v=>s.c=v, {opts:[['green','เขียว'],['','ปกติ (ดำ)'],['amber','เหลือง'],['red','แดง']]})
+    ]));
+  });
+  b.appendChild(d);
+
+  const e2=el('div',{class:'ed-card'},[el('h3',{text:'สภาวะธาตุ ๔ (แถบสถานะ)'})]);
+  CFG.elementStates.forEach((s,i)=>{
+    e2.appendChild(el('div',{class:'cols3'},[
+      fld(i===0?'ร้อยละไม่เกิน':'', s.maxPct, v=>s.maxPct=v, {type:'number'}),
+      fld(i===0?'ข้อความ':'', s.t, v=>s.t=v),
+      fld(i===0?'สี':'', s.c, v=>s.c=v, {opts:[['green','เขียว'],['amber','เหลือง'],['red','แดง']]})
+    ]));
+  });
+  b.appendChild(e2);
+}
+
+/* ---- ตารางกิจวัตร ---- */
+function tierPicker(onPick){
+  const row=el('div',{class:'ed-card'},[el('h3',{text:'เลือกกลุ่มเสี่ยงที่จะแก้ไข'})]);
+  const wrap=el('div',{class:'ed-tabs',style:'padding:0;margin:0'});
+  CFG.tiers.forEach((t,i)=>wrap.appendChild(
+    el('button',{class:'ed-tab'+(edTier===i?' on':''),type:'button',text:t.label,
+                 onclick:()=>{edTier=i; renderEditor()}})));
+  row.appendChild(wrap);
+  return row;
+}
+function paneRoutine(b){
+  b.appendChild(tierPicker());
+  const t=CFG.tiers[edTier];
+  b.appendChild(el('div',{class:'hintbox',html:
+    'ช่องกิจกรรมรองรับ HTML อย่างง่าย เช่น <code>&lt;b&gt;ตัวหนา&lt;/b&gt;</code> และ <code>&lt;br&gt;</code> ขึ้นบรรทัดใหม่ · '+
+    'ยิ่งเพิ่มแถวมาก รายงานอาจยาวเกิน 1 หน้า A4'}));
+  const c=el('div',{class:'ed-card'},[
+    el('h3',{},[document.createTextNode(t.routineTitle),
+      el('span',{class:'tag',text:`${t.routine.length} ช่วงเวลา`})])]);
+  t.routine.forEach((r,i)=>{
+    const it=el('div',{class:'ed-item'});
+    it.appendChild(el('div',{class:'top'},[
+      el('span',{class:'n',text:`ช่วงที่ ${i+1}`}), el('span',{class:'sp'}),
+      iconBtn('↑','เลื่อนขึ้น',()=>moveItem(t.routine,i,-1)),
+      iconBtn('↓','เลื่อนลง',()=>moveItem(t.routine,i,1)),
+      iconBtn('✕','ลบแถวนี้',()=>{
+        if(!confirm('ลบช่วงเวลานี้?')) return;
+        t.routine.splice(i,1); saveCfg(); renderEditor();
+      },'del')
+    ]));
+    it.appendChild(el('div',{class:'cols2'},[
+      fld('เวลา', r[0], v=>r[0]=v),
+      fld('ชื่อช่วง (กาลสมุฏฐาน)', r[1], v=>r[1]=v)
+    ]));
+    it.appendChild(fld('กิจกรรมส่งเสริมสุขภาพบำบัด', r[2], v=>r[2]=v, {rows:4}));
+    c.appendChild(it);
+  });
+  c.appendChild(el('button',{class:'btn ghost sm',type:'button',text:'+ เพิ่มช่วงเวลา',
+    onclick:()=>{t.routine.push(['00:00 - 00:00','','']); saveCfg(); renderEditor()}}));
+  b.appendChild(c);
+}
+
+/* ---- บริการ ---- */
+function paneSvc(b){
+  b.appendChild(tierPicker());
+  const t=CFG.tiers[edTier];
+  const c=el('div',{class:'ed-card'},[el('h3',{text:'บริการที่แนะนำสำหรับ '+t.label})]);
+  t.services.forEach((s,i)=>{
+    const it=el('div',{class:'ed-item'});
+    it.appendChild(el('div',{class:'top'},[
+      el('span',{class:'n',text:`รายการที่ ${i+1}`}), el('span',{class:'sp'}),
+      iconBtn('↑','เลื่อนขึ้น',()=>moveItem(t.services,i,-1)),
+      iconBtn('↓','เลื่อนลง',()=>moveItem(t.services,i,1)),
+      iconBtn('✕','ลบ',()=>{t.services.splice(i,1); saveCfg(); renderEditor()},'del')
+    ]));
+    it.appendChild(el('div',{class:'cols2'},[
+      fld('ชื่อบริการ', s[0], v=>s[0]=v),
+      fld('รายละเอียดด้านขวา (เช่น 90 นาที)', s[1], v=>s[1]=v)
+    ]));
+    c.appendChild(it);
+  });
+  c.appendChild(el('button',{class:'btn ghost sm',type:'button',text:'+ เพิ่มบริการ',
+    onclick:()=>{t.services.push(['บริการใหม่','']); saveCfg(); renderEditor()}}));
+  b.appendChild(c);
+}
+
+/* ---- หัวรายงาน / ตัวชี้วัด ---- */
+function paneRep(b){
+  const o=CFG.org;
+  const c=el('div',{class:'ed-card'},[el('h3',{text:'หัวรายงานและข้อความทั่วไป'})]);
+  c.appendChild(el('div',{class:'cols2'},[
+    fld('ชื่อแบรนด์ (บนหน้าแบบสอบถาม)', o.brand, v=>o.brand=v),
+    fld('คำนำหน้ารหัส ID', o.idPrefix, v=>o.idPrefix=v)
+  ]));
+  c.appendChild(fld('ชื่อรายงาน', o.title, v=>o.title=v));
+  c.appendChild(fld('ชื่อรองใต้หัวรายงาน', o.subtitle, v=>o.subtitle=v));
+  c.appendChild(el('div',{class:'cols2'},[
+    fld('หัวข้อหน้าข้อมูลผู้รับบริการ', o.intakeTitle, v=>o.intakeTitle=v),
+    fld('คำอธิบายหน้าข้อมูลผู้รับบริการ', o.intakeSub, v=>o.intakeSub=v)
+  ]));
+  c.appendChild(el('div',{class:'cols3'},[
+    fld('หัวข้อตารางธรรมนามัย', o.domTitle, v=>o.domTitle=v),
+    fld('หัวข้อสภาวะธาตุ', o.elTitle, v=>o.elTitle=v),
+    fld('หัวข้อบริการที่แนะนำ', o.svcTitle, v=>o.svcTitle=v)
+  ]));
+  c.appendChild(fld('หัวข้อกล่องคะแนน', o.scoreTitle, v=>o.scoreTitle=v));
+  c.appendChild(fld('หมายเหตุใต้คะแนน', o.scoreNote, v=>o.scoreNote=v, {rows:2}));
+  c.appendChild(fld('ข้อความปฏิเสธความรับผิด', o.disclaimer, v=>o.disclaimer=v, {rows:3}));
+  c.appendChild(fld('ข้อความท้ายหน้า', o.footer, v=>o.footer=v));
+  b.appendChild(c);
+
+  const r=el('div',{class:'ed-card'},[el('h3',{text:'ตัวชี้วัดในตาราง “การประเมินความเสี่ยง”'})]);
+  r.appendChild(el('div',{class:'hintbox',text:
+    'ผลประเมินคำนวณจากร้อยละของหมวดที่เลือก แล้วแบ่งเป็นระดับตามจำนวนข้อความที่ใส่ (คั่นด้วยเครื่องหมายจุลภาค) เรียงจากดีที่สุดไปแย่ที่สุด'}));
+  CFG.risks.forEach((rk,i)=>{
+    const it=el('div',{class:'ed-item'});
+    it.appendChild(el('div',{class:'top'},[
+      el('span',{class:'n',text:`ตัวชี้วัดที่ ${i+1}`}), el('span',{class:'sp'}),
+      iconBtn('✕','ลบ',()=>{CFG.risks.splice(i,1); saveCfg(); renderEditor()},'del')
+    ]));
+    it.appendChild(el('div',{class:'cols2'},[
+      fld('ชื่อตัวชี้วัด', rk.name, v=>rk.name=v),
+      fld('คำนวณจากหมวด', rk.from, v=>rk.from=v, {opts:CFG.groups.map(g=>[g.key,g.name])})
+    ]));
+    it.appendChild(fld('ระดับผลประเมิน (คั่นด้วย ,)', rk.levels.join(', '),
+      v=>rk.levels=v.split(',').map(s=>s.trim()).filter(Boolean)));
+    r.appendChild(it);
+  });
+  r.appendChild(el('button',{class:'btn ghost sm',type:'button',text:'+ เพิ่มตัวชี้วัด',
+    onclick:()=>{CFG.risks.push({name:'ตัวชี้วัดใหม่',from:CFG.groups[0].key,levels:['ปกติ','เฝ้าระวัง','สูง']});
+                 saveCfg(); renderEditor()}}));
+  b.appendChild(r);
+
+  const s=el('div',{class:'ed-card'},[el('h3',{text:'ช่องอื่นในเป้าหมายการปรับสมดุล'})]);
+  s.appendChild(el('div',{class:'cols2'},[
+    fld('ระดับความเครียดคำนวณจากหมวด', CFG.stressFrom, v=>CFG.stressFrom=v,
+        {opts:CFG.groups.map(g=>[g.key,g.name])}),
+    fld('ระดับคุณภาพการนอน (คั่นด้วย ,)', CFG.sleepLevels.join(', '),
+        v=>CFG.sleepLevels=v.split(',').map(x=>x.trim()).filter(Boolean))
+  ]));
+  b.appendChild(s);
+}
+
+/* ---- editor open/close & io ---- */
+let reportOpen=false, editorOpen=false;
+function updateFabs(){ $('gear').style.display = (reportOpen||editorOpen) ? 'none' : ''; }
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('sk_theme', t);
+  $('theme').textContent = t==='dark' ? '☀' : '☾';
+  $('theme').title = t==='dark' ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
+}
+applyTheme(localStorage.getItem('sk_theme')
+  || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$('theme').onclick = ()=>
+  applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+
+$('gear').onclick = ()=>{ editorOpen=true; updateFabs();
+  $('editor').style.display='block'; document.body.style.overflow='hidden'; renderEditor(); };
+$('edClose').onclick = ()=>{
+  saveCfg(); editorOpen=false; updateFabs();
+  $('editor').style.display='none'; document.body.style.overflow='';
+  if(ans.length!==CFG.questions.length) resetAnswers();
+  if(step>CFG.groups.length) step=CFG.groups.length;
+  renderWizard();
+};
+$('edExport').onclick = ()=>{
+  const blob=new Blob([JSON.stringify(CFG,null,2)],{type:'application/json'});
+  const a=el('a',{href:URL.createObjectURL(blob),download:'sikharee-config.json'});
+  document.body.appendChild(a); a.click(); a.remove();
+};
+$('edImport').onclick = ()=>$('edFile').click();
+$('edFile').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      CFG=Object.assign(structuredClone(DEFAULT_CFG), JSON.parse(r.result));
+      saveCfg(); resetAnswers(); renderEditor(); alert('นำเข้าเรียบร้อย');
+    }catch(err){ alert('ไฟล์ไม่ถูกต้อง: '+err.message) }
+  };
+  r.readAsText(f); e.target.value='';
+};
+$('edReset').onclick = ()=>{
+  if(!confirm('คืนค่าคำถามและผลลัพธ์ทั้งหมดกลับเป็นค่าเริ่มต้น?')) return;
+  CFG=structuredClone(DEFAULT_CFG); saveCfg(); resetAnswers(); renderEditor();
+};
+
+/* ================= start ================= */
+resetAnswers();
+renderWizard();
+</script>
+</body>
+</html>
