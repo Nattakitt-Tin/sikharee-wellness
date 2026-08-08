@@ -126,6 +126,10 @@ button,input,select,textarea{font-family:inherit}
 #reportView{display:none}
 .sheetbar{max-width:800px; margin:0 auto; padding:24px 20px 6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
 .sheetbar .note{font-size:13px; color:var(--muted); margin-left:auto; text-align:right}
+.savestat{font-size:13.5px; font-weight:600}
+.savestat.busy{color:var(--muted)}
+.savestat.ok{color:var(--green)}
+.savestat.err{color:var(--red)}
 .sheetwrap{padding:14px 20px 60px; display:flex; justify-content:center}
 
 .page{
@@ -287,6 +291,8 @@ table.routine td.tm em{display:block; font-style:normal; font-weight:500; color:
   <div class="sheetbar">
     <button class="btn" id="btnPrint" type="button">บันทึกเป็น PDF / พิมพ์</button>
     <button class="btn ghost" id="btnNew" type="button">เริ่มแบบประเมินใหม่</button>
+    <span class="savestat" id="saveStatus"></span>
+    <button class="btn ghost sm" id="btnRetry" type="button" style="display:none">ลองส่งอีกครั้ง</button>
     <div class="note">ในหน้าต่างพิมพ์ เลือกปลายทาง <b>“บันทึกเป็น PDF”</b><br>ขนาด A4 · ปิด Headers and footers</div>
   </div>
   <div class="sheetwrap">
@@ -430,6 +436,7 @@ const DEFAULT_CFG = {
     {name:'ไฟย่อยอาหาร (ปาจกเตโช)',  from:'chivita', levels:['ปกติ','อ่อนกำลัง','กำเริบ','พิการ']}
   ],
   sleepLevels:['ดีมาก','ปกติ','ต่ำกว่าเกณฑ์','ต่ำกว่าเกณฑ์มาก'],
+  submit:{enabled:false, url:'', secret:''},
   tiers:[
     {
       key:'green', min:0, max:9, color:'green', label:'กลุ่มเสี่ยงน้อย (0-9)',
@@ -622,12 +629,77 @@ function tierOf(total){
 }
 function levelIdx(pct,n){ return Math.min(n-1, Math.floor(pct/(100/n))) }
 
+/* ================= ส่งผลเข้า Google Sheet ================= */
+const Q_KEY='sk_queue';
+let lastResult=null;
+
+function queueGet(){ try{ return JSON.parse(localStorage.getItem(Q_KEY)||'[]') }catch(e){ return [] } }
+function queueSet(q){ localStorage.setItem(Q_KEY, JSON.stringify(q)) }
+
+function setStatus(kind,msg){
+  const n=$('saveStatus');
+  n.className='savestat '+(kind||'');
+  n.textContent=msg||'';
+  $('btnRetry').style.display = kind==='err' ? '' : 'none';
+}
+
+async function postResult(payload){
+  const url=(CFG.submit.url||'').trim();
+  if(!url) throw new Error('ยังไม่ได้ตั้งค่า URL ปลายทาง');
+  const res = await fetch(url,{
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},   /* เลี่ยง preflight ที่ Apps Script รับไม่ได้ */
+    body: JSON.stringify(payload)
+  });
+  let data;
+  try{ data = JSON.parse(await res.text()); }
+  catch(e){ throw new Error('ปลายทางตอบกลับผิดรูปแบบ (ตรวจว่า deploy เป็น Web App และตั้งสิทธิ์ Anyone)'); }
+  if(!data.ok) throw new Error(data.error||'ปลายทางปฏิเสธการบันทึก');
+  return data;
+}
+
+function payloadOf(result){
+  return {secret: CFG.submit.secret||'', id: result.id, fields: result.fields};
+}
+
+async function submitResult(result){
+  if(!CFG.submit.enabled || !(CFG.submit.url||'').trim()){ setStatus('',''); return }
+  const payload = payloadOf(result);
+  setStatus('busy','กำลังบันทึกลง Google Sheet…');
+  try{
+    const r = await postResult(payload);
+    setStatus('ok', r.duplicate ? 'บันทึกไว้แล้ว ✓' : 'บันทึกลง Google Sheet แล้ว ✓');
+    flushQueue();
+  }catch(err){
+    const q=queueGet(); q.push(payload); queueSet(q);
+    setStatus('err','บันทึกไม่สำเร็จ: '+err.message+' (เก็บไว้ในเครื่องแล้ว '+q.length+' รายการ)');
+  }
+}
+
+async function flushQueue(){
+  let q=queueGet();
+  if(!q.length || !CFG.submit.enabled || !(CFG.submit.url||'').trim()) return;
+  const rest=[];
+  for(const p of q){
+    try{ await postResult(p) }catch(e){ rest.push(p) }
+  }
+  queueSet(rest);
+  if(!rest.length) setStatus('ok','ส่งรายการที่ค้างอยู่ครบแล้ว ✓');
+  else setStatus('err','ยังส่งไม่สำเร็จ '+rest.length+' รายการ');
+}
+
+$('btnRetry').onclick = ()=>{
+  setStatus('busy','กำลังส่งอีกครั้ง…');
+  flushQueue();
+};
+
 function showReport(){
   buildReport();
   $('wizard').style.display='none';
   reportOpen=true; updateFabs();
   $('reportView').style.display='block';
   window.scrollTo(0,0);
+  submitResult(lastResult);
 }
 
 function buildReport(){
@@ -641,6 +713,7 @@ function buildReport(){
   const total = ans.reduce((a,v)=>a+(v||0),0);
   const tier  = tierOf(total);
   const balance = Math.round((maxScore()-total)/maxScore()*100);
+  const F={};   /* ข้อมูลสำหรับส่งเข้า Google Sheet */
 
   const now=new Date();
   $('rId').textContent   = intake.id || '—';
@@ -649,6 +722,16 @@ function buildReport(){
   $('rDhatu').textContent= intake.dhatu;
   $('rTime').textContent = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} `
                          + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  F['เวลาบันทึก']   = $('rTime').textContent;
+  F['รหัสอ้างอิง']  = intake.id || '';
+  F['ชื่อ']         = intake.name || '';
+  F['ธาตุเจ้าเรือน'] = intake.dhatu;
+  F['เดือนเกิด']    = intake.month==='' ? '' : MONTHS[Number(intake.month)];
+  F['คะแนนรวม']     = total;
+  F['คะแนนเต็ม']    = maxScore();
+  F['คะแนนสมดุล']   = balance;
+  F['กลุ่มเสี่ยง']   = tier.label;
 
   $('rSummary').textContent  = tier.summary;
   $('rApproach').textContent = tier.approach;
@@ -659,6 +742,9 @@ function buildReport(){
   $('rDomains').innerHTML = CFG.groups.map(g=>{
     const s=domainScore(g.key), m=domainMax(g.key), pct=m?s/m*100:0;
     const st=pickState(CFG.domainStates,pct);
+    F[g.name]              = s;
+    F[g.name+' (%)']       = Number(pct.toFixed(1));
+    F[g.name+' (ประเมิน)'] = st.t;
     return `<tr><td>${g.name}${g.short?' ('+g.short+')':''}</td>
       <td class="c">${s.toFixed(1)} (0.0-${m.toFixed(1)})</td>
       <td class="c">${pct.toFixed(1)}</td>
@@ -672,6 +758,7 @@ function buildReport(){
     const m = idxs.length*(CFG.scale.length-1);
     const pct = Math.round(idxs.reduce((a,i)=>a+(ans[i]||0),0)/m*100);
     const st = pickState(CFG.elementStates,pct);
+    F[el.name] = st.t;
     return `<div class="el">
       <div class="el-top"><span class="nm">${el.name}</span><span class="st ${CLR[st.c]}">${st.t}</span></div>
       <div class="bar"><i class="${BG[st.c]}" style="width:${Math.max(pct,4)}%"></i></div></div>`;
@@ -687,18 +774,21 @@ function buildReport(){
   const sPct = Math.round(domainScore(sg.key)/(domainMax(sg.key)||1)*100);
   const sTxt = sPct>=67?'สูง':sPct>=34?'ปานกลาง':'ต่ำ';
   $('rStress').innerHTML = `<span class="${sPct>=67?'c-red':sPct>=34?'c-amber':'c-green'}">${sTxt} (${sPct}%)</span>`;
+  F['ระดับความเครียดสะสม'] = `${sTxt} (${sPct}%)`;
 
   const sleepQ = CFG.questions.findIndex(q=>q.tag==='sleep');
   const sMax = CFG.scale.length-1;
   const sVal = sleepQ>=0 ? (ans[sleepQ]||0) : Math.round(sPct/100*sMax);
   const sLv  = levelIdx(sVal/sMax*100, CFG.sleepLevels.length);
   $('rSleep').innerHTML = `<span class="${sLv>=2?'c-red':sLv===1?'c-amber':'c-green'}">${CFG.sleepLevels[sLv]}</span>`;
+  F['คุณภาพการนอนหลับ'] = CFG.sleepLevels[sLv];
 
   /* ความเสี่ยง */
   $('rRisks').innerHTML = CFG.risks.map(r=>{
     const g = CFG.groups.find(x=>x.key===r.from);
     const pct = g ? domainScore(g.key)/(domainMax(g.key)||1)*100 : 0;
     const i = levelIdx(pct, r.levels.length);
+    F[r.name] = r.levels[i];
     return `<tr><td>${r.name}</td>
       <td class="c ${i>=2?'c-red':''}"><b>${r.levels[i]}</b></td></tr>`;
   }).join('');
@@ -706,6 +796,12 @@ function buildReport(){
   /* บริการ */
   $('rServices').innerHTML = tier.services.map(([k,v])=>
     `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  F['บริการที่แนะนำ'] = tier.services.map(([k,v])=>`${k} (${v})`).join(' / ');
+
+  /* คำตอบรายข้อ */
+  ans.forEach((v,i)=>{ F['ข้อ '+(i+1)] = v===null ? '' : v; });
+
+  lastResult = {id: (intake.id||'') + '·' + now.getTime(), fields: F};
 }
 
 $('btnPrint').onclick = ()=>window.print();
@@ -727,7 +823,8 @@ const TABS=[
   ['tier','การแปรผล / กลุ่มเสี่ยง'],
   ['routine','ตารางกิจวัตร'],
   ['svc', 'บริการที่แนะนำ'],
-  ['rep', 'หัวรายงาน / ตัวชี้วัด']
+  ['rep', 'หัวรายงาน / ตัวชี้วัด'],
+  ['submit','บันทึกผลลง Sheet']
 ];
 let edTab='q', edTier=0;
 
@@ -780,7 +877,8 @@ function renderEditor(){
     el('button',{class:'ed-tab'+(edTab===k?' on':''),type:'button',text:t,
                  onclick:()=>{edTab=k; renderEditor()}})));
   const b=$('edBody'); b.innerHTML='';
-  ({q:paneQ, scale:paneScale, tier:paneTier, routine:paneRoutine, svc:paneSvc, rep:paneRep})[edTab](b);
+  ({q:paneQ, scale:paneScale, tier:paneTier, routine:paneRoutine, svc:paneSvc,
+    rep:paneRep, submit:paneSubmit})[edTab](b);
 }
 
 /* ---- คำถาม ---- */
@@ -1035,6 +1133,52 @@ function paneRep(b){
   b.appendChild(s);
 }
 
+/* ---- บันทึกผลลง Sheet ---- */
+function paneSubmit(b){
+  const sub=CFG.submit;
+  b.appendChild(el('div',{class:'hintbox',html:
+    'ส่งผลทุกครั้งที่ผู้ใช้กด “ดูผลการประเมิน” ไปต่อท้าย Google Sheet ของคุณ ผ่าน Google Apps Script · '+
+    'ดูขั้นตอนติดตั้งได้ในไฟล์ <b>README.md</b> ของโปรเจกต์ (หัวข้อ “บันทึกผลลง Google Sheet”)<br>'+
+    '<b>ข้อควรทราบ:</b> URL และรหัสลับจะฝังอยู่ในหน้าเว็บ ผู้ที่เปิดดูซอร์สโค้ดจะเห็นได้ '+
+    'จึงควรใช้เป็นเพียงการกันข้อมูลขยะ ไม่ใช่การรักษาความลับระดับสูง'}));
+
+  const c=el('div',{class:'ed-card'},[el('h3',{text:'การเชื่อมต่อ'})]);
+  c.appendChild(fld('เปิดใช้งาน', sub.enabled?'1':'0', v=>{sub.enabled=(v==='1')},
+    {opts:[['0','ปิด — ไม่ส่งข้อมูลออก'],['1','เปิด — ส่งผลเข้า Google Sheet']]}));
+  c.appendChild(fld('URL ของ Web App (ลงท้ายด้วย /exec)', sub.url, v=>sub.url=v.trim()));
+  c.appendChild(fld('รหัสลับ (ต้องตรงกับ SECRET ใน Code.gs)', sub.secret, v=>sub.secret=v));
+
+  const out=el('div',{class:'hintbox',style:'margin:10px 0 0',text:'ยังไม่ได้ทดสอบ'});
+  c.appendChild(el('div',{style:'margin-top:10px'},[
+    el('button',{class:'btn ghost sm',type:'button',text:'ทดสอบการเชื่อมต่อ',onclick:async()=>{
+      saveCfg();
+      out.textContent='กำลังทดสอบ…';
+      try{
+        const r=await postResult({secret:sub.secret||'', id:'ทดสอบ·'+Date.now(),
+          fields:{'เวลาบันทึก':new Date().toLocaleString('th-TH'),'รหัสอ้างอิง':'ทดสอบระบบ','ชื่อ':'— ทดสอบการเชื่อมต่อ —'}});
+        out.textContent='สำเร็จ ✓ เขียนแถวทดสอบลงชีตแล้ว'+(r.row?' (แถวที่ '+r.row+')':'')+' — ลบแถวนี้ทิ้งได้เลย';
+      }catch(err){ out.textContent='ไม่สำเร็จ: '+err.message }
+    }}),
+  ]));
+  c.appendChild(out);
+  b.appendChild(c);
+
+  const q=queueGet();
+  const c2=el('div',{class:'ed-card'},[
+    el('h3',{},[document.createTextNode('รายการที่ยังส่งไม่สำเร็จ'),
+      el('span',{class:'tag',text:q.length+' รายการ'})])]);
+  c2.appendChild(el('div',{class:'hintbox',text:
+    'เมื่อส่งไม่สำเร็จ (เช่น เน็ตหลุด) ผลจะถูกเก็บไว้ในเครื่องและส่งซ้ำอัตโนมัติเมื่อมีการประเมินครั้งถัดไป '+
+    'สคริปต์ฝั่ง Sheet กันข้อมูลซ้ำให้แล้วด้วยรหัสอ้างอิง'}));
+  c2.appendChild(el('div',{class:'cols2'},[
+    el('button',{class:'btn ghost sm',type:'button',text:'ลองส่งรายการค้างเดี๋ยวนี้',
+      onclick:async()=>{ await flushQueue(); renderEditor() }}),
+    el('button',{class:'btn danger sm',type:'button',text:'ล้างรายการค้างทิ้ง',
+      onclick:()=>{ if(confirm('ลบรายการที่ยังส่งไม่สำเร็จทั้งหมด?')){ queueSet([]); renderEditor() } }})
+  ]));
+  b.appendChild(c2);
+}
+
 /* ---- editor open/close & io ---- */
 let reportOpen=false, editorOpen=false;
 function updateFabs(){ $('gear').style.display = (reportOpen||editorOpen) ? 'none' : ''; }
@@ -1084,6 +1228,7 @@ $('edReset').onclick = ()=>{
 /* ================= start ================= */
 resetAnswers();
 renderWizard();
+flushQueue();
 </script>
 </body>
 </html>
